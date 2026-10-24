@@ -1,5 +1,7 @@
-Entername: Unzip Files
-on: [push]
+name: Unzip Files
+on:
+  push:
+  workflow_dispatch:
 jobs:
   unzip:
     runs-on: ubuntu-latest
@@ -9,8 +11,14 @@ jobs:
       - uses: actions/checkout@v4
       - name: Extract ZIP
         run: |
-          unzip -o *.zip
-          rm *.zip
+          for f in *.zip; do unzip -o "$f"; rm "$f"; done
+          for d in */; do
+            if [ "$d" != ".github/" ] && [ -f "${d}index.html" ]; then
+              mv "$d"* . 2>/dev/null || true
+              mv "$d".* . 2>/dev/null || true
+              rmdir "$d" 2>/dev/null || true
+            fi
+          done
       - name: Save unpacked files
         run: |
           git config --global user.name "GitHub Action"
